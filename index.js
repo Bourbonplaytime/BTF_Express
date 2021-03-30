@@ -10,6 +10,10 @@ app.set('view engine', 'handlebars');
 
 var User = require('./modules/Users.js');
 
+var buildUser = require('./modules/buildUser.js');
+
+var unpackUser = require('./modules/unpackUser.js');
+
 app.use(express.static('public' ));
 
 app.use('/showAll', function(req, res) {
@@ -19,7 +23,7 @@ app.use('/showAll', function(req, res) {
 		     res.status(500).send(err);
 		 } else {
 			 for(var i = 0; i < foundUsers.length; i++) {
-         let message = "<p>Username: " + foundUsers[i].username + " UserID: " + foundUsers[i].userID;
+         let message = "<p>Username: " + foundUsers[i].username;
          message += '<br /><hr> can be found on Twitter at <a href="https://twitter.com/' + foundUsers[i].tweet + '">' + foundUsers[i].tweet + '</a>';
          message += "<br /><hr> IG: <a href='https://www.instagram.com/" + foundUsers[i].insta + "'>" + foundUsers[i].insta + "</a><br /><hr>";
          message += "Facebook: <a href='https://www.facebook.com/" + foundUsers[i].fb + "'>" + foundUsers[i].fb + "</a><br /><hr>";
@@ -36,34 +40,15 @@ app.get('/', (req, res) => {
     res.render('welcome', {page_title: "Welcome to my App!"});
   });
 
-app.post('/addUser', function(req, res){
+app.post('/addUser', function(req, res) {
 
-	var newUser = new User ({
-    userID: req.body.userID,
-    username: req.body.username,
-    tweet: req.body.tweet,
-    insta: req.body.insta,
-    fb: req.body.fb,
-    lnk: req.body.lnk,
-    yt: req.body.yt
-	});
+  var newUser = buildUser(req);
 
 	newUser.save( function(err, user) {
 		if (err) {
-		    res.status(500).send(err);
-		}
-		else {
-
-      let name = user.username;
-      let tweet = user.tweet;
-      let insta = user.insta;
-      let fb = user.fb;
-      let lnk = user.lnk;
-      let yt = user.yt;
-
-      let addedData = {page_title: "Tweep added!", message: "You've been added to the database!", name: name, tweet: tweet, insta: insta, fb: fb, lnk: lnk, yt: yt, endMessage: "Welcome to the fun!"};
-
-		  res.render("foundTweep", addedData);
+		  res.status(500).send(err);
+		} else {
+		  res.render("foundTweep", unpackUser("Tweep added!", "You've been added to the database!", user, "Welcome to the fun!"));
 		}
    });
  });
@@ -75,7 +60,8 @@ app.get('/findUser', function(req, res) {
 app.post('/findForm', function(req, res) {
 
 	var search = req.body.tweet;
-	User.findOne( {tweet: search}, function(err, foundTweep) {
+
+  User.findOne( {tweet: search}, function(err, foundTweep) {
 		if (err) {
 		    res.status(500).send(err);
 		}
@@ -83,15 +69,7 @@ app.post('/findForm', function(req, res) {
 		    res.send('No Tweetar with the handle of ' + search);
 		}
 		else {
-      let name = foundTweep.username;
-      let tweet = foundTweep.tweet;
-      let insta = foundTweep.insta;
-      let fb = foundTweep.fb;
-      let lnk = foundTweep.lnk;
-      let yt = foundTweep.yt
-
-      let foundData = {page_title: "You found your tweep!", message: "We've found your tweep!", name: name, tweet: tweet, insta: insta, fb: fb, lnk: lnk, yt: yt, endMessage: "Check out their other socials!"}
-      res.render('foundTweep', foundData);
+      res.render('foundTweep', unpackUser("You found your tweep!", "We've found your tweep!", foundTweep, "Check out their other socials!"));
 		}
 	});
 });
@@ -123,19 +101,9 @@ app.post('/updateForm', function(req, res) {
 
 		user.save(function (err, user) {
       if(err) {
-          res.status(500).send(err);
+        res.status(500).send(err);
       } else {
-
-        let name = user.username;
-        let tweet = user.tweet;
-        let insta = user.insta;
-        let fb = user.fb;
-        let lnk = user.lnk;
-        let yt = user.yt;
-
-        let updatedData = {page_title: "Info updated!", message: "Your profiles have been updated!", name: name, tweet: tweet, insta: insta, fb: fb, lnk: lnk, yt: yt, endMessage: "Thanks for keeping us up to speed!"};
-
-        res.render('foundTweep', updatedData);
+        res.render('foundTweep', unpackUser("Info updated!", "Your profiles have been updated!", user, "Thanks for keeping us up to speed!"));
       }
      });
    }

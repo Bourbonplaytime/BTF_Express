@@ -1,9 +1,8 @@
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/btf_profile');
+mongoose.connect('mongodb://localhost:27017/btf_new', {useNewUrlParser: true, useUnifiedTopology: true});
 
 var userSchema = new mongoose.Schema({
-	userID: {type: Number, required: true, unique: true},
 	username: {type: String, required: true},
 	tweet: { type: String, required: true, unique: true, index: true},
   insta: {type:String},
