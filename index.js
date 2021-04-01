@@ -14,6 +14,10 @@ var buildUser = require('./modules/buildUser.js');
 
 var unpackUser = require('./modules/unpackUser.js');
 
+var updateUser = require('./modules/updateUser.js');
+
+var getUser = require('./modules/getUser.js');
+
 app.use(express.static('public' ));
 
 app.use('/showAll', function(req, res) {
@@ -59,14 +63,14 @@ app.get('/findUser', function(req, res) {
 
 app.post('/findForm', function(req, res) {
 
-	var search = req.body.tweet;
+	var search = getUser(req);
 
   User.findOne( {tweet: search}, function(err, foundTweep) {
 		if (err) {
-		    res.status(500).send(err);
+		  res.status(500).send(err);
 		}
 		else if (!foundTweep) {
-		    res.send('No Tweetar with the handle of ' + search);
+		  res.send('No Tweetar with the handle of ' + search);
 		}
 		else {
       res.render('foundTweep', unpackUser("You found your tweep!", "We've found your tweep!", foundTweep, "Check out their other socials!"));
@@ -79,35 +83,7 @@ app.get('/updateUser', function(req, res) {
 });
 
 app.post('/updateForm', function(req, res) {
-
-  let updateID = req.body.tweet;
-  let updateIG = req.body.ig;
-	let updateFB = req.body.fb;
-  let updateLNK = req.body.lnk;
-  let updateYT = req.body.yt;
-
-  User.findOne( {tweet: updateID}, function(err, user) {
-	if (err) {
-	    res.status(500).send(err);
-	}
-	else if (!user) {
-	    res.send('No user with the twitter handle ' + updateID);
-	}
-	else {
-		user.insta = updateIG;
-		user.fb = updateFB;
-    user.lnk = updateLNK;
-    user.yt = updateYT;
-
-		user.save(function (err, user) {
-      if(err) {
-        res.status(500).send(err);
-      } else {
-        res.render('foundTweep', unpackUser("Info updated!", "Your profiles have been updated!", user, "Thanks for keeping us up to speed!"));
-      }
-     });
-   }
- });
+  updateUser(req, res);
 });
 
 app.get('/deleteyouraccount', function(req, res) {
@@ -116,23 +92,17 @@ app.get('/deleteyouraccount', function(req, res) {
 
 app.post('/deleteForm', function(req, res) {
 
-	 var deleteID = req.body.tweet;
+  let deleteID = getUser(req);
 
-	 User.findOneAndRemove({tweet: deleteID}, function(err, user) {
-		if (err) {
-		    res.status(500).send(err);
-		}
-		else if (!user) {
-		    res.send('No user with the ID of ' + deleteID);
-		}
-		else {
-
-      let tweet = deleteID;
-
-      let deleteData = {page_title: "Tweep deleted!", tweet: tweet};
-      res.render('deleteConfirm', deleteData);
-		}
-    });
+  User.findOneAndRemove({tweet: deleteID}, function(err, user) {
+   if (err) {
+     res.status(500).send(err);
+   } else if (!user) {
+     res.send('No user with the ID of ' + deleteID);
+   } else {
+     res.render('deleteConfirm', {page_title: 'Tweep deleted', tweet: deleteID})
+  };
+});
 });
 
 app.use((req, res) => {
