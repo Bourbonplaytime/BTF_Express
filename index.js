@@ -20,6 +20,26 @@ var getUser = require('./modules/getUser.js');
 
 app.use(express.static('public' ));
 
+app.use('/seedDB', function(req, res) {
+  let data = [{username: 'Matt', tweet: 'urbanplaytime', insta: 'urbanplaytime', fb: 'matt.harvey.90204', lnk: 'mattharveycbusa', yt: 'UC1VODH3cOHufrRkm7i_oHQA'},
+          {username: 'Cher', tweet: 'cher', insta: 'cher', fb: 'cher', lnk: '', yt: 'UCmoUgBTHRydApyOeqlDF1oQ'},
+          {username: 'Bono', tweet: 'U2', insta: 'u2bonoloveofficial', fb: 'Bono.IND', lnk: '', yt: 'UCJj0xFFzvMHdxAVblCG_gpQ'}];
+
+  for(var i = 0; i < data.length; i++) {
+    var seedUser = new User ({
+      username: data[i].username,
+      tweet: data[i].tweet,
+      insta: data[i].insta,
+      fb: data[i].fb,
+      lnk: data[i].lnk,
+      yt: data[i].yt
+    });;
+    seedUser.save();
+    res.write('Added!');
+  }
+  res.end();
+});
+
 app.use('/showAll', function(req, res) {
 
     User.find( function(err, foundUsers) {
